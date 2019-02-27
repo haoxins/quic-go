@@ -46,4 +46,6 @@ workflows:
       - build:
           name: "Go 1.12"
           image: "circleci/golang:1.12"
+            environment:
+              GO111MODULE: "ON"
           runrace: true
