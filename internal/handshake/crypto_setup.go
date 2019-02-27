@@ -73,8 +73,6 @@ type cryptoSetup struct {
 	messageErrChan chan error
 	// handshakeDone is closed as soon as the go routine running qtls.Handshake() returns
 	handshakeDone chan struct{}
-	// is closed when Close() is called
-	closeChan chan struct{}
 
 	clientHelloWritten     bool
 	clientHelloWrittenChan chan struct{}
@@ -196,7 +194,6 @@ func newCryptoSetup(
 		messageChan:            make(chan []byte, 100),
 		receivedReadKey:        make(chan struct{}),
 		receivedWriteKey:       make(chan struct{}),
-		closeChan:              make(chan struct{}),
 	}
 	qtlsConf := cs.tlsConfigToQtlsConfig(tlsConf)
 	cs.tlsConf = qtlsConf
@@ -227,11 +224,6 @@ func (h *cryptoSetup) RunHandshake() error {
 	}()
 
 	select {
-	case <-h.closeChan:
-		close(h.messageChan)
-		// wait until the Handshake() go routine has returned
-		<-handshakeErrChan
-		return errors.New("Handshake aborted")
 	case <-handshakeComplete: // return when the handshake is done
 		return nil
 	case err := <-handshakeErrChan:
@@ -250,7 +242,7 @@ func (h *cryptoSetup) RunHandshake() error {
 }
 
 func (h *cryptoSetup) Close() error {
-	close(h.closeChan)
+	close(h.messageChan)
 	// wait until qtls.Handshake() actually returned
 	<-h.handshakeDone
 	return nil

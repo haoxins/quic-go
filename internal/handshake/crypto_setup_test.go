@@ -189,7 +189,7 @@ var _ = Describe("Crypto Setup TLS", func() {
 		go func() {
 			defer GinkgoRecover()
 			err := server.RunHandshake()
-			Expect(err).To(MatchError("Handshake aborted"))
+			Expect(err).To(HaveOccurred())
 			close(done)
 		}()
 		Expect(server.Close()).To(Succeed())
