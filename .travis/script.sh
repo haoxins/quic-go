@@ -4,8 +4,8 @@ set -ex
 
 go get -t ./...
 if [ ${TESTMODE} == "lint" ]; then 
-  go get github.com/alecthomas/gometalinter
-  gometalinter --install
+  curl -L https://git.io/vp6lP | sh
+  mv ./bin/* $GOPATH/bin
   gometalinter --deadline=300s --tests ./...
 fi
 
